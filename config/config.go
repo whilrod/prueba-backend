@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -23,11 +24,20 @@ func ConexionDB() *gorm.DB {
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
 
-	db, err := gorm.Open(postgres.Open(conectionString), &gorm.Config{})
-	if err != nil {
-		panic("No se pudo conectar a la base de datos")
+	var err error
+	for i := 0; i < 10; i++ {
+		DB, err = gorm.Open(postgres.Open(conectionString), &gorm.Config{})
+		if err != nil {
+			break
+		}
+		log.Println("Esperando a la DB, reintentando en 3s...")
+		time.Sleep(3 * time.Second)
+		log.Println("Conexión exitosa a la base de datos")
 	}
-	DB = db
-	log.Println("Conexión exitosa a la base de datos")
+	if err != nil {
+		panic("No se pudo conectar a la base de datos: " + err.Error())
+	}
+
+	log.Println("✅ Conexión exitosa a la base de datos")
 	return DB
 }
