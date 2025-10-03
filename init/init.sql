@@ -1,6 +1,3 @@
--- Conectar a la base creada automáticamente
-\connect prueba_db;
-
 -- Crear usuario para la app
 CREATE USER app_user WITH PASSWORD 'app_pass';
 

@@ -56,7 +56,7 @@ func (r *userRepository) Update(user *models.User) error {
 }
 
 /*
-Delete elimina un usuario de la tabla "users" según su ID
+Delete elimina un usuario de la tabla "usuario" según su ID
 Devuelve un error en caso de que ocurra algún problema
 */
 func (r *userRepository) Delete(id uint) error {
