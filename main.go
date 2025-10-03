@@ -24,7 +24,14 @@ func main() {
 	mux := http.NewServeMux()
 	routes.RegisterUserRoutes(mux, userController)
 
-	// Servidor
+	// Servidor frontend html, css, js
+	fileServer := http.FileServer(http.Dir("templates"))
+	mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "templates/index.html")
+	})
+
+	// Servidor backend
 	log.Println("Servidor corriendo en http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }

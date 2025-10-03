@@ -68,6 +68,7 @@ func (c *UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte(`{"message": "Usuario creado correctamente"}`))
 	json.NewEncoder(w).Encode(user)
 }
 
@@ -94,6 +95,8 @@ func (c *UserController) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"message": "Usuario actualizado correctamente"}`))
 	json.NewEncoder(w).Encode(user)
 }
 
@@ -111,5 +114,7 @@ func (c *UserController) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"message": "Usuario eliminado correctamente"}`))
 }

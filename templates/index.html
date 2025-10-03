@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>CRUD Usuarios</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Gestión de Usuarios</h1>
+
+        <form id="user-form">
+            <input type="hidden" id="user-id">
+            <input type="text" id="nombre" placeholder="Nombre" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <button type="submit">Guardar</button>
+            <button type="button" id="cancel-btn" style="display:none;">Cancelar</button>
+        </form>
+
+        <ul id="user-list"></ul>
+    </div>
+
+    <script>
+        const userList = document.getElementById('user-list');
+        const form = document.getElementById('user-form');
+        const cancelBtn = document.getElementById('cancel-btn');
+
+        async function fetchUsers() {
+            const res = await fetch('/users');
+            const users = await res.json();
+            userList.innerHTML = '';
+            users.forEach(user => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${user.nombre} (${user.email})</span>
+                    <div class="actions">
+                        <button onclick="editUser(${user.id}, '${user.nombre}', '${user.email}')">Editar</button>
+                        <button onclick="deleteUser(${user.id})">Eliminar</button>
+                    </div>
+                `;
+                userList.appendChild(li);
+            });
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('user-id').value;
+            const nombre = document.getElementById('nombre').value;
+            const email = document.getElementById('email').value;
+
+            if (id) {
+                // Update
+                await fetch(`/users/${id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ nombre, email })
+                });
+            } else {
+                // Create
+                await fetch('/users', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ nombre, email })
+                });
+            }
+
+            form.reset();
+            cancelBtn.style.display = 'none';
+            fetchUsers();
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            form.reset();
+            cancelBtn.style.display = 'none';
+            document.getElementById('user-id').value = '';
+        });
+
+        window.editUser = (id, nombre, email) => {
+            document.getElementById('user-id').value = id;
+            document.getElementById('nombre').value = nombre;
+            document.getElementById('email').value = email;
+            cancelBtn.style.display = 'inline';
+        }
+
+        window.deleteUser = async (id) => {
+            if (confirm('¿Seguro quieres eliminar este usuario?')) {
+                await fetch(`/users/${id}`, { method: 'DELETE' });
+                fetchUsers();
+            }
+        }
+
+        fetchUsers();
+    </script>
+</body>
+</html>

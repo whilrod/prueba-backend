@@ -17,6 +17,7 @@ FROM debian:bookworm-slim
 WORKDIR /app
 
 COPY --from=builder /app/main .
+COPY templates ./templates
 
 # Puerto donde corre el backend
 EXPOSE 8080
