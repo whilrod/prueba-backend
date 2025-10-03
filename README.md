@@ -56,6 +56,109 @@ Permite **crear, leer, actualizar y eliminar usuarios** mediante un **API REST**
 └── README.md               # Documentación del proyecto
 ```
 
+## Arquitectura del proyecto y Patrones de diseños implememtados
+
+### 1️⃣ Arquitectura general
+El proyecto sigue una arquitectura de en capas muy usado en aplicaciones backend limpias
+
+```bash
+Frontend -> Controllers -> Services/Repositories -> Database (GORM/Postgres)
+```
+***- Frontend:*** HTML/CSS/JS servido desde Go. Interactúa con la API REST.
+***- Controllers:*** Gestionan la lógica HTTP, reciben peticiones y devuelven respuestas.
+***- Repositories:*** Encapsulan la lógica de acceso a datos con GORM.
+***- Models:*** Representan la estructura de la base de datos (ORM).
+***- Config:*** Configuración de la DB y variables de entorno.
+
+### 2️⃣ Patrones de diseño implementados
+#### a) Repository Pattern
+**Qué es:** Encapsula la lógica de acceso a datos, separando el acceso a la DB del resto de la aplicación.
+**Dónde se ve:** repository/userRepository.go + repository/implementationInterface.go
+**Ventaja:** Permite cambiar la implementación del almacenamiento (Postgres, SQLite, memoria) sin afectar a los controladores.
+
+```bash
+type UserRepository interface {
+    GetAll() ([]models.User, error)
+    GetByID(id uint) (models.User, error)
+    Create(user models.User) (models.User, error)
+    Update(user models.User) (models.User, error)
+    Delete(id uint) error
+}
+```
+
+### b) Dependency Injection
+
+**Qué es:** Inyectar dependencias en lugar de crearlas directamente dentro del componente.
+
+**Dónde se ve:** En los controladores al recibir la instancia del repositorio:
+```bash
+func NewUserController(repo repository.UserRepository) *UserController {
+    return &UserController{Repo: repo}
+}
+```
+
+**Ventaja:** Facilita pruebas unitarias y desacopla componentes.
+
+### c) Factory / Constructor
+
+**Qué es:** Funciones que crean instancias de objetos utilizando una configuración específica.
+
+**Ventaja:** Facilita pruebas unitarias y desacopla componentes.
+
+### c) Factory / Constructor
+
+**Qué es:** Funciones que crean instancias de structs con sus dependencias ya configuradas.
+
+**Dónde se ve:** *-NewUserController() y NewUserRepository()*
+
+### d) MVC ligero (Model-View-Controller)
+
+**Modelos:** *models/User.go* → representan la base de datos.
+
+**Controladores:** *controllers/UserController.go* → manejan las solicitudes HTTP.
+
+**Views:** Archivos HTML/CSS (*frontend/*) → interacción con el usuario.
+
+**Ventaja:** Separación de responsabilidades, más mantenible.
+
+### e) Encapsulación / Single Responsibility
+
+Cada paquete tiene una única responsabilidad:
+
+**config** → configuración y conexión a DB.
+
+**repository** → acceso a datos.
+
+**controllers** → lógica de API.
+
+**routes** → registro de endpoints.
+
+### f) RESTful API
+
+Cada recurso (User) tiene rutas bien definidas:
+
+*GET /users* → listar usuarios
+
+*GET /users/{id}* → obtener usuario por ID
+
+*POST /users* → crear usuario
+
+*PUT /users/{id}* → actualizar usuario
+
+*DELETE /users/{id}* → eliminar usuario
+
+**Sigue convenciones REST, haciendo que el backend sea consumible desde cualquier frontend.**
+
+### 3️⃣ Buenas prácticas de arquitectura
+
+- **Migración automática con GORM (AutoMigrate)** → evita inconsistencias entre DB y modelos.
+
+- **Configuración mediante variables de entorno** → separación de entornos (dev, prod).
+
+- **Uso de http.ServeMux** → centraliza rutas y facilita middleware futuro.
+
+- **Contenedores Docker** → entorno reproducible y aislado.
+
 ## 🔹 Instalación y ejecución
 1. Clonar el repositorio:
 ```bash
@@ -133,3 +236,4 @@ INSERT INTO usuarios (nombre, email) VALUES
 - Formulario de creación/edición, lista de usuarios y botones de guardar, editar y eliminar.
 - Estilos simples pero agradables con CSS puro.
 ![alt text](image-6.png)
+
